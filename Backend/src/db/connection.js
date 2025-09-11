@@ -13,8 +13,6 @@ const connectionDB = async () => {
       apiKey: process.env.QDRANT_API_KEY,
     });
     console.log(chalk.green("✅ Qdrant connected successfully"));
-    const result = await qdrantClient.getCollections({});
-    console.log("📦 Collections:", result.collections);
   } catch (error) {
     console.log(chalk.bgRed("❌ Qdrant connection failed"), error);
     process.exit(1);
