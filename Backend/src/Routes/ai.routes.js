@@ -6,15 +6,13 @@ import VideoGenerator from "../controllers/Video/VideoGenerator.controller.js";
 import CreateVectorEmbedding from "../controllers/Embedding/File/vector-embedding.controller.js";
 import { UploadFolder } from "../controllers/Embedding/Folder/upload-folder.queue.js";
 import DirectoryEmbedding from "../controllers/Embedding/Folder/directory-embedding.controller.js";
-import { JobStatus } from "../controllers/Queue-Job/status.job.js";
-
 
 const router = express.Router(); 
 // AI Routes
 router.post("/upload/file", upload.single("file"), UploadFile);
 router.post("/upload/folder", upload.array("files", 100), UploadFolder);
 router.get("/chat", CreateVectorEmbedding,DirectoryEmbedding);
-router.get("/job/status/:jobId",JobStatus)
+
 
 // router.post("/video-prompt", VideoGenerator);
 // router.post("/text", TextToSpeech);
