@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
 interface Doc {
   pageContent?: string;
   folderName?: string;
@@ -21,7 +20,7 @@ type IMessage = {
   documents?: Doc[];
 };
 
-export default function ChatComponent() {
+export default function ChatComponent(  ) {
   const [message, setMessage] = useState<string>("");
   const [messageHistory, setMessageHistory] = useState<IMessage[]>([]);
   const [isThinking, setIsThinking] = useState<boolean>(false);

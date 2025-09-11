@@ -3,10 +3,12 @@ import ChatComponent from "@/app/component/chat";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
+import FileWatcher from "./component/fileWatcher";
 
 const Chat = () => {
   const [loading, setloading] = useState(false);
-
+  const [jobId, setJobId] = useState("");
+  
   const uploadfile = () => {
     const el = document.createElement("input");
     el.setAttribute("type", "file");
@@ -27,13 +29,15 @@ const Chat = () => {
               method: "POST",
               body: formData,
             });
+            const data = await response.json();
+            setJobId(data.jobId);
             if (!response.ok) {
               throw new Error("❌ Upload failed");
             }
 
-            toast.success(" File uploaded successfully!");
+            toast.success(" File uploaded for Processing!");
           } catch (err) {
-            toast.error("❌ Upload failed!");
+            toast.error("❌ Upload failed for Processing!");
             console.error(err);
           } finally {
             setloading(false);
@@ -71,13 +75,15 @@ const Chat = () => {
                 body: formData,
               }
             );
+            const data = await response.json();
+            setJobId(data.jobId);
             if (!response.ok) {
               throw new Error("❌ Upload failed");
             }
 
-            toast.success(" Folder uploaded successfully!");
+            toast.success(" Folder uploaded for Processing!");
           } catch (err) {
-            toast.error("❌ Upload failed!");
+            toast.error("❌ Upload failed for Processing!");
             console.error(err);
           } finally {
             setloading(false);
@@ -132,6 +138,7 @@ const Chat = () => {
               {loading ? "Uploading..." : "Upload Folder"}
             </button>
           </div>
+          <FileWatcher jobId={jobId} />
         </aside>
         <main className="col-span-12 md:col-span-9 min-h-screen">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-10 py-8 md:py-12">
