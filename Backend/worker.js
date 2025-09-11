@@ -2,27 +2,21 @@ import { Worker } from "bullmq";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { CharacterTextSplitter } from "@langchain/textsplitters";
 import embeddings from "./src/Config/embedding.config.js";
-import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { JSONLoader } from "langchain/document_loaders/fs/json";
-import { JSONLinesLoader } from "langchain/document_loaders/fs/json";
-import { TextLoader } from "langchain/document_loaders/fs/text";
-import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
-import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import loadFile from "./src/services/loadfile.service.js";
 import loadFolder from "./src/services/loadfolder.service.js";
 import dotenv from "dotenv";
+
 dotenv.config({ path: "./.env" });
 
-const worker = new Worker(
+export const worker = new Worker(
   "file-upload-queue",
   async (job) => {
     try {
       console.log(`🚀 Processing job: ${job.id}`);
-      const { folderPath, path, isFolder,fileName } = job.data;
+      const { folderPath, path, isFolder } = job.data;
       let docs = [];
       if (isFolder) {
-          docs = await loadFolder(folderPath);
+        docs = await loadFolder(folderPath);
       } else {
         console.log(`📄 Loading single file: ${path}`);
         docs = await loadFile(path);
@@ -33,7 +27,7 @@ const worker = new Worker(
         {
           url: process.env.QDRANT_URL,
           apiKey: process.env.QDRANT_API_KEY,
-          collectionName: "pdf-docs",
+          collectionName: "Document-Embedding",
         }
       );
 
@@ -44,14 +38,23 @@ const worker = new Worker(
       const splitDocs = await textSplitter.splitDocuments(docs);
       console.log(`✂️ Split into ${splitDocs.length} chunks`);
 
-      await vectorStore.addDocuments(splitDocs);
+      const result = await vectorStore.addDocuments(splitDocs);
       console.log(`✅ Vectorization complete`);
-      return { success: true, message: "Vectorization complete" };
-      
+
+      return {
+        success: true,
+        message: "Vectorization complete",
+        jobId: job.id,
+        result: result,
+        status: "completed",
+      };
     } catch (error) {
       console.error(`❌ Job ${job.id} failed:`, error);
-      return { success: false, message: "Vectorization failed" };
-      throw error;
+      return { success: false,
+         message: "Vectorization failed",
+         status: "failed",
+         error: error.message,
+      };
     }
   },
   {
@@ -61,4 +64,7 @@ const worker = new Worker(
       password: process.env.REDIS_PASSWORD,
     },
   }
+  
+ 
+  
 );
