@@ -6,13 +6,13 @@ async function NotionFolderEmbedding(req, res) {
   if (!userQuery) {
     return res.status(400).json({ error: "Query message is required" });
   }
-  console.log("🔍 Searching in Notion collection: pdf-docs");
+  console.log("🔍 Searching in Notion collection: Document-Embedding");
   const vectorStore = await QdrantVectorStore.fromExistingCollection(
     embeddings,
     {
       url: process.env.QDRANT_URL,
       apiKey: process.env.QDRANT_API_KEY,
-      collectionName: "pdf-docs",
+      collectionName: "Notion-Document-Embedding",
     }
   );
   const ret = vectorStore.asRetriever({ k: 2 });

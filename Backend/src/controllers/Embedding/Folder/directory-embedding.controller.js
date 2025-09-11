@@ -23,8 +23,6 @@ export default async function DirectoryEmbedding(req, res) {
       return res.status(400).json({ error: "❌ userQuery is required" });
     }
 
-    console.log("🔍 Connecting to Qdrant collection: pdf-docs");
-
     //  Load ALL files from directory (auto-handles each extension)
     const loader = new DirectoryLoader(folderPath, {
       ".pdf": (path) => new PDFLoader(path, { parsedItemSeparator: "" }),
@@ -57,14 +55,13 @@ export default async function DirectoryEmbedding(req, res) {
       {
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_API_KEY,
-        collectionName: "pdf-docs",
+        collectionName: "Document-Embedding",
       }
     );
 
     // Retrieve top results for query
     const retriever = vectorStore.asRetriever({ k: 2 });
     const result = await retriever.invoke(userQuery);
-    console.log("✅ Retrieved docs for query");
 
     // Pass retrieved docs to GPT
     const SYSTEM_PROMPT = AI_PROMPT + JSON.stringify(result);
@@ -75,13 +72,14 @@ export default async function DirectoryEmbedding(req, res) {
         { role: "user", content: userQuery },
       ],
     });
-
     return res.json({
       message: chatResult.choices[0].message.content,
       docs: result,
+      status: "completed",
     });
+
   } catch (err) {
     console.error("❌ Error in DirectoryEmbedding:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message, status: "failed" });
   }
 }

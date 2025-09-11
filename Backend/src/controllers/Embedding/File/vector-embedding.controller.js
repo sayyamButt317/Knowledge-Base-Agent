@@ -11,7 +11,7 @@ export default async function CreateVectorEmbedding(req, res, next) {
       return res.status(400).json({ error: "Query message is required" });
     }
 
-    console.log("🔍 Searching in Qdrant collection: pdf-docs");
+    console.log("🔍 Searching in Qdrant collection: Document-Embedding");
 
     // Connect to existing Qdrant collection
     const vectorStore = await QdrantVectorStore.fromExistingCollection(
@@ -19,7 +19,7 @@ export default async function CreateVectorEmbedding(req, res, next) {
       {
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_API_KEY,
-        collectionName: "pdf-docs",
+        collectionName: "Document-Embedding",
       }
     );
     
@@ -44,12 +44,14 @@ export default async function CreateVectorEmbedding(req, res, next) {
     return res.json({
       success: true,
       message: chatResult.choices[0].message.content,
-      docs: result,
+      docs: result, 
+      status: "completed",
     });
   } catch (error) {
     console.error("❌ Error in CreateVectorEmbedding:", error);
     return res.status(500).json({
       success: false,
+      status: "failed",
       error: error.message || "Internal server error",
     });
   }
